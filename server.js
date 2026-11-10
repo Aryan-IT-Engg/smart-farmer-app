@@ -108,8 +108,8 @@ app.get('/api/advisory', async (req, res) => {
     }
 });
 
-// --- Serve Frontend (Catch-all route for Single Page App) ---
-app.get('*', (req, res) => {
+// --- Serve Frontend (Compatible with Express v5) ---
+app.get(/^(?!\/api).*/, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
