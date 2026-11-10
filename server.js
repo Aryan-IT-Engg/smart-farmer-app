@@ -12,14 +12,14 @@ const Advisory = require('./models/Advisory');
 const app = express();
 app.use(express.json());
 app.use(cors());
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// MongoDB Connection (Updated without deprecated options)
+// MongoDB Connection
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/farmerDB')
 .then(() => console.log("MongoDB Connected Successfully"))
 .catch(err => console.log("DB Connection Error: ", err));
 
-// --- FEATURE 1: APMC Market Prices (Auto Fetch from Data.gov.in) ---
+// --- FEATURE 1: APMC Market Prices ---
 app.get('/api/market-prices', async (req, res) => {
     try {
         const apiKey = process.env.API_KEY || 'YOUR_DATA_GOV_API_KEY';
@@ -32,15 +32,14 @@ app.get('/api/market-prices', async (req, res) => {
     }
 });
 
-// --- FEATURE 2: Weather Forecast (Open-Meteo API) ---
+// --- FEATURE 2: Weather Forecast ---
 app.get('/api/weather', async (req, res) => {
     try {
         const { lat, lon } = req.query;
         const latitude = lat || 18.5204;
         const longitude = lon || 73.8567;
 
-        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m&daily=temperature_2m_max,precipitation_sum&timezone=auto`;
-        
+        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,soil_temperature_0cm,soil_moisture_0_to_1cm&timezone=auto`;
         const response = await axios.get(weatherUrl);
         res.json({ success: true, data: response.data });
     } catch (error) {
@@ -88,7 +87,7 @@ app.get('/api/expenses', async (req, res) => {
     }
 });
 
-// --- FEATURE 5: Expert Advisory / Contact Form ---
+// --- FEATURE 5: Expert Advisory ---
 app.post('/api/advisory', async (req, res) => {
     try {
         const advisory = new Advisory(req.body);
@@ -108,7 +107,7 @@ app.get('/api/advisory', async (req, res) => {
     }
 });
 
-// --- Serve Frontend (Compatible with Express v5) ---
+// --- Serve Frontend ---
 app.get(/^(?!\/api).*/, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });

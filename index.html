@@ -33,16 +33,16 @@
             
             <!-- Left Column: Weather & Market Prices -->
             <div class="col-lg-6">
-                <!-- 1. Weather Forecast Card with GPS Location Name -->
+                <!-- 1. Weather Forecast Card with Extended Agricultural Parameters -->
                 <div class="card">
                     <div class="card-header text-primary d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-cloud-sun-fill"></i> Live Weather Forecast</span>
+                        <span><i class="bi bi-cloud-sun-fill"></i> Live Weather & Soil Advisory</span>
                         <small id="location-name" class="text-dark fw-bold" style="font-size: 0.8rem;"><i class="bi bi-geo-alt-fill text-danger"></i> Detecting location...</small>
                     </div>
                     <div class="card-body" id="weather-box">
                         <div class="d-flex align-items-center">
                             <div class="spinner-border text-primary me-3" role="status"></div>
-                            <span>Fetching weather and location name...</span>
+                            <span>Fetching extended weather and soil data...</span>
                         </div>
                     </div>
                 </div>
@@ -138,7 +138,7 @@
         </div>
     </div>
 
-    <!-- JavaScript for Real-Time GPS Tracking & APIs -->
+    <!-- JavaScript for Real-Time GPS Tracking, Extended Weather & APIs -->
     <script>
         let lastLat = null;
         let lastLon = null;
@@ -151,7 +151,6 @@
                         const lat = position.coords.latitude;
                         const lon = position.coords.longitude;
                         
-                        // Update only if location changes significantly to optimize API calls
                         if (!lastLat || !lastLon || Math.abs(lat - lastLat) > 0.001 || Math.abs(lon - lastLon) > 0.001) {
                             lastLat = lat;
                             lastLon = lon;
@@ -190,6 +189,7 @@
             }
         }
 
+        // Fetch Extended Weather & Soil Parameters from Backend API
         async function fetchWeather(lat, lon) {
             try {
                 const res = await fetch(`/api/weather?lat=${lat}&lon=${lon}`);
@@ -197,18 +197,30 @@
                 if(result.success) {
                     const current = result.data.current;
                     document.getElementById('weather-box').innerHTML = `
-                        <div class="row text-center">
-                            <div class="col-4 border-end">
-                                <h5 class="text-primary mb-0">${current.temperature_2m} °C</h5>
-                                <small class="text-muted">Temperature</small>
+                        <div class="row text-center g-2">
+                            <div class="col-4 border-end mb-2">
+                                <h6 class="text-primary mb-0">${current.temperature_2m} °C</h6>
+                                <small class="text-muted" style="font-size: 0.75rem;">Temperature</small>
+                            </div>
+                            <div class="col-4 border-end mb-2">
+                                <h6 class="text-success mb-0">${current.relative_humidity_2m} %</h6>
+                                <small class="text-muted" style="font-size: 0.75rem;">Humidity</small>
+                            </div>
+                            <div class="col-4 mb-2">
+                                <h6 class="text-info mb-0">${current.wind_speed_10m} km/h</h6>
+                                <small class="text-muted" style="font-size: 0.75rem;">Wind Speed</small>
                             </div>
                             <div class="col-4 border-end">
-                                <h5 class="text-success mb-0">${current.relative_humidity_2m} %</h5>
-                                <small class="text-muted">Humidity</small>
+                                <h6 class="text-dark mb-0">${current.precipitation ?? 0} mm</h6>
+                                <small class="text-muted" style="font-size: 0.75rem;">Precipitation</small>
+                            </div>
+                            <div class="col-4 border-end">
+                                <h6 class="text-secondary mb-0">${current.soil_temperature_0cm ?? 'N/A'} °C</h6>
+                                <small class="text-muted" style="font-size: 0.75rem;">Soil Temp</small>
                             </div>
                             <div class="col-4">
-                                <h5 class="text-info mb-0">${current.wind_speed_10m}</h5>
-                                <small class="text-muted">Wind (km/h)</small>
+                                <h6 class="text-warning-emphasis mb-0">${current.soil_moisture_0_to_1cm ?? 'N/A'} m³/m³</h6>
+                                <small class="text-muted" style="font-size: 0.75rem;">Soil Moisture</small>
                             </div>
                         </div>
                     `;
